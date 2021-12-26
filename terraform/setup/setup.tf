@@ -44,15 +44,20 @@ data "external" "aoc_role_exist" {
 resource "aws_iam_instance_profile" "aoc_test_profile" {
   name = module.common.aoc_iam_role_name
   role = aws_iam_role.aoc_role[count.index].name
-  count = data.external.aoc_role_exist.result.iam_role_exist == "false" ? 1 : 0
+  count = data.external.aoc_role_exist.result.iam_role_exist == "false" ? 1 : 1
   depends_on = [aws_iam_role.aoc_role]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_iam_role" "aoc_role" {
   name = module.common.aoc_iam_role_name
   path = "/"
-  count = data.external.aoc_role_exist.result.iam_role_exist == "false" ? 1 : 0
+  count = data.external.aoc_role_exist.result.iam_role_exist == "false" ? 1 : 1
   depends_on = [data.external.aoc_role_exist]
+
   assume_role_policy = <<EOF
 {
     "Version": "2012-10-17",
@@ -76,13 +81,21 @@ resource "aws_iam_role" "aoc_role" {
     ]
 }
 EOF
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "ec2-read-only-policy-attachment" {
   role       = aws_iam_role.aoc_role[count.index].name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-  count = data.external.aoc_role_exist.result.iam_role_exist == "false" ? 1 : 0
+  count = data.external.aoc_role_exist.result.iam_role_exist == "false" ? 1 : 1
   depends_on = [aws_iam_role.aoc_role]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # create vpc with nat gateway so that we can use it to launch awsvpc ecs task in both ecs and fargate
@@ -114,6 +127,7 @@ data "external" "aoc_sg_exist" {
   query = {
     check_sg= "true"
     sg_name= "${module.common.aoc_vpc_security_group}"
+    aws_region= "${var.region}"
   }
 }
 
@@ -239,6 +253,7 @@ data "external" "sample_app_ecr_repo_exist" {
   query = {
     check_ecr_repo= "true"
     ecr_repo_name= "${module.common.sample_app_ecr_repo_name}"
+    aws_region= "${var.region}"
   }
 }
 
@@ -255,6 +270,7 @@ data "external" "mocked_server_ecr_repo_exist" {
   query = {
     check_ecr_repo= "true"
     ecr_repo_name= "${module.common.mocked_server_ecr_repo_name}"
+    aws_region= "${var.region}"
   }
 }
 

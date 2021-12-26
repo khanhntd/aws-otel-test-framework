@@ -2,6 +2,7 @@
 check_iam_role=false
 check_iam_policy=false
 check_ecr_repo=false
+check_sg=false
 
 function error_exit() {
   echo "$1" 1>&2
@@ -43,11 +44,11 @@ function check_if_resources_exist() {
     fi
 
     if [[ ${check_ecr_repo} == "true" ]]; then
-        aws ecr describe-repositories --repository-names "${ecr_repo_name}" > /dev/null || ecr_repo_exist=false
+        aws ecr describe-repositories --region "${aws_region}" --repository-names "${ecr_repo_name}" --query "repositories[0].repositoryUri" >/dev/null || ecr_repo_exist=false
     fi
 
     if [[ ${check_sg} == "true" ]]; then
-        aws ec2 wait security-group-exists --filters Name=group-name,Values="${sg_name}" > /dev/null || sg_exist=false
+        aws ec2 wait security-group-exists --filters Name=group-name,Values="${sg_name}" --region "${aws_region}" > /dev/null || sg_exist=false
     fi
 }
 

@@ -10,7 +10,7 @@ data "external" "appmesh_k8s_iam_policy_exist" {
 resource "aws_iam_policy" "appmesh_k8s_iam_policy" {
   name = module.common.appmesh_k8s_iam_policy
   path = "/"
-  count = data.external.appmesh_k8s_iam_policy_exist.result.iam_policy_exist == "false" ? 1 : 0
+  count = data.external.appmesh_k8s_iam_policy_exist.result.iam_policy_exist == "false" ? 1 : 1
   depends_on = [data.external.appmesh_k8s_iam_policy_exist]
   # Terraform's jsonencode function converts a
   # Terraform expression result to valid JSON syntax.
