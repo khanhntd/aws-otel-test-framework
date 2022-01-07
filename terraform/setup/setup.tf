@@ -279,3 +279,7 @@ resource "aws_ecr_repository" "mocked_server_ecr_repo" {
   count = data.external.mocked_server_ecr_repo_exist.result.ecr_repo_exist == "false" ? 1 : 0
   depends_on = [data.external.mocked_server_ecr_repo_exist]
 }
+
+resource "aws_prometheus_workspace" "amp_testing_framework" {
+  alias = module.common.amp_testing_framework
+}
